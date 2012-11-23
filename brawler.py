@@ -94,10 +94,6 @@ class BrawlerGame():
         self.timer = pygame.time.Clock()
         self.screen = pygame.display.set_mode((self.width,self.height))
 
-        self.background = load_image('map01.png') #pygame.image.load(os.path.join('images', 'map01.png')).convert()
-        self.background = pygame.transform.scale(self.background, (self.width, self.height))
-        self.screen.blit(self.background, [0,0])
-
         self.overlay = overlay(self.width,self.height)
 
         self.sprites = pygame.sprite.OrderedUpdates()
@@ -107,21 +103,20 @@ class BrawlerGame():
         self.ticks = 0
 
         self.camera = c.Camera(self.width, self.height)
-        #self.playerSprite = p.Player((500,500))
-        #self.actorsprites.add(self.playerSprite)
+        self.playerSprite = p.Player((200,450))
+        self.actorsprites.add(self.playerSprite)
 
         # need to load some enemies somewhere
 
-        #self.sprites.add(self.playerSprite)
+        self.sprites.add(self.playerSprite)
 
 
     def update(self):
-        print 'Update'
-        off = self.camera.update(self.playerSprite.pos)
-        self.actorsprites.update(off)
+        #off = self.camera.update(self.playerSprite.pos)
+        self.actorsprites.update()
 
     def draw(self):
-        print 'Draw'
+        #print 'Draw'
         self.sprites.clear(self.screen, self.background)
         things = self.sprites.draw(self.screen)
         pygame.display.update(things)
@@ -129,9 +124,16 @@ class BrawlerGame():
 
     def levelInit(self):
         print 'Level Init'
-        return true
+        self.background = load_image('brawler-arena-mockup.jpg') #pygame.image.load(os.path.join('images', 'map01.png')).convert()
+        self.background = pygame.transform.scale(self.background, (self.width, self.height))
+        self.screen.blit(self.background, [0,0])
+
+        # This is kind of ugly
+        self.backWall = pygame.Rect(0, 0, self.width, self.height-250)
+        return True
 
     def mainLoop(self):
+        self.levelInit()
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -163,6 +165,16 @@ class BrawlerGame():
                     elif event.key == K_s or event.key == K_DOWN:
                         self.playerSprite.down = False
 
+            self.update()
+            self.draw()
+            #if pygame.sprite.spritecollideany(self.exitSprite, self.actorsprites):
+            #    i+=1
+            #    break;
+            #elif self.playerSprite.vel[1] > 250:
+            #    if self.recording: self.stopRecording()
+            #    self.resetLevel()
+            #    break;
+            self.timer.tick(60)
 
 
 
@@ -181,7 +193,7 @@ class BrawlerGame():
                     elif e.key == K_RETURN:
                         print 'Resume';
                         self.sprites.remove(self.overlay)
-                        self.draw()
+                        #self.draw()
                         return True
 
 

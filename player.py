@@ -1,7 +1,6 @@
 import pygame
 import sys
-from actor import *
-class Player(Actor):
+from myactor import *
+class Player(myActor):
     def __init__(self, acc):
-        Actor.__init__(self, acc)
-
+        myActor.__init__(self, acc)
