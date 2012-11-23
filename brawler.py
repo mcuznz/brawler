@@ -2,6 +2,7 @@
 import pygame
 import sys, os
 import player as p
+import mapobject as m
 import camera as c
 from pygame.locals import *
 from sprites import SpriteStripAnim
@@ -37,44 +38,6 @@ def load_sound(name):
         raise SystemExit, message
     return sound
 
-#
-#
-#surface = pygame.display.set_mode((resolution_x,resolution_y))
-#FPS = 60
-#
-#clock = pygame.time.Clock()
-#
-## set up assorted sprites - later, we should load this from XML
-#background = pygame.image.load("images/map01.jpg")
-#
-#def pause():
-#    while true:
-#        # game paused
-#        for e in pygame.event.get():
-#            if e.type == KEYDOWN:
-#                if e.key == K_ESCAPE:
-#                    sys.exit()
-#                elif e.key == K_RETURN:
-#                    return true
-#
-#def walk_up():
-#    return true
-#def walk_down():
-#    return true
-#def walk_left():
-#    return true
-#def walk_right():
-#    return true
-#
-#
-#
-#while true:
-#    for e in pygame.event.get():
-#        if e.type == KEYDOWN:
-#            if e.key == K_ESCAPE:
-#                pause()
-#            elif e.key == K_RETURN:
-
 class overlay(pygame.sprite.Sprite):
     def __init__(self, width, height):
         pygame.sprite.Sprite.__init__(self)
@@ -107,9 +70,9 @@ class BrawlerGame():
         self.actorsprites.add(self.playerSprite)
 
         # need to load some enemies somewhere
-
         self.sprites.add(self.playerSprite)
 
+        self.mapObjects = pygame.sprite.Group()
 
     def update(self):
         #off = self.camera.update(self.playerSprite.pos)
@@ -129,8 +92,43 @@ class BrawlerGame():
         self.screen.blit(self.background, [0,0])
 
         # This is kind of ugly
-        self.backWall = pygame.Rect(0, 0, self.width, self.height-250)
+        self.backWall = m.mapobject((0, 0, self.width, self.height-250))
+        self.leftBound = m.mapobject((-200, 0, 190, self.height))
+        self.rightBound = m.mapobject((self.width, 0, 190, self.height))
+        self.lowerBound = m.mapobject((-100, self.height, self.width+100, 190))
+        self.shipBox = m.mapobject((self.width - 250, self.height - 250, 250, 250))
+
+        self.mapObjects.add(self.backWall)
+        self.mapObjects.add(self.leftBound)
+        self.mapObjects.add(self.rightBound)
+        self.mapObjects.add(self.lowerBound)
+        self.mapObjects.add(self.shipBox)
+
         return True
+
+    def mapCollision(self):
+        #for mappart in self.mapObjects:
+        #    if self.playerSprite.footprint.colliderect(mappart.rect):
+        #        print self.playerSprite.footprint
+        #        print mappart.rect
+        #        print 'Collision!'
+
+        collides = pygame.sprite.groupcollide(self.actorsprites, self.mapObjects, False, False)
+        for actor in collides:
+            for mappart in collides[actor]:
+                while pygame.sprite.collide_rect(actor, mappart):
+                    if actor.rect.bottom > mappart.rect.top > actor.rect.top:
+                        actor.offset(0,-1)
+                        actor.vel[1] = 0
+                    if actor.rect.top < mappart.rect.bottom < actor.rect.bottom:
+                        actor.offset(0,1)
+                        actor.vel[1] = 0
+                    if actor.rect.right > mappart.rect.left > actor.rect.left:
+                        actor.offset(-1,0)
+                        actor.vel[0] = 0
+                    if actor.rect.left < mappart.rect.right < actor.rect.right:
+                        actor.offset(1,0)
+                        actor.vel[0] = 0
 
     def mainLoop(self):
         self.levelInit()
@@ -139,7 +137,7 @@ class BrawlerGame():
                 if event.type == pygame.QUIT:
                     sys.exit()
                 elif event.type == pygame.KEYDOWN:
-                    if event.key == K_ESCAPE:
+                    if event.key == K_ESCAPE or event.key == K_q:
                         self.pause()
                     elif event.key == K_w or event.key == K_UP:
                         self.playerSprite.up = True
@@ -167,7 +165,9 @@ class BrawlerGame():
 
             self.update()
             self.draw()
-            #if pygame.sprite.spritecollideany(self.exitSprite, self.actorsprites):
+            self.mapCollision()
+            #if pygame.sprite.spritecollideany(self.playerSprite, self.mapObjects):
+            #    print 'Collision'
             #    i+=1
             #    break;
             #elif self.playerSprite.vel[1] > 250:
@@ -175,9 +175,6 @@ class BrawlerGame():
             #    self.resetLevel()
             #    break;
             self.timer.tick(60)
-
-
-
 
     def pause(self):
         print 'Paused';
@@ -187,7 +184,7 @@ class BrawlerGame():
             self.draw()
             for e in pygame.event.get():
                 if e.type == KEYDOWN:
-                    if e.key == K_ESCAPE:
+                    if e.key == K_ESCAPE or e.key == K_q:
                         print 'Exiting';
                         sys.exit()
                     elif e.key == K_RETURN:
@@ -195,8 +192,6 @@ class BrawlerGame():
                         self.sprites.remove(self.overlay)
                         #self.draw()
                         return True
-
-
 
 if __name__ == '__main__':
     redo = BrawlerGame()

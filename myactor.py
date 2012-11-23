@@ -73,45 +73,56 @@ class myActor(pygame.sprite.Sprite):
 
     def upPress(self):
         print 'Up'
-        if self.onGround: self.acc[1] = myActor.groundAcc
-        else: self.acc[1] = myActor.airAcc
+        if self.onGround: self.acc[1] = -myActor.groundAcc
+        else: self.acc[1] = -myActor.airAcc
 
     def downPress(self):
         print 'Down'
         if self.onGround: self.acc[1] = myActor.groundAcc
         else: self.acc[1] = myActor.airAcc
 
+    def offset(self, x, y):
+        self.pos = [a[0] + a[1] for a in zip(self.pos, [x,y])]
+        self.rect.center = self.pos
+
     def reset(self):
         self.pos = self.initialpos
         self.rect.center = self.pos
 
     def update(self, offset=[0.0, 0.0]):
-        #self.pos = [a+b+myActor.velDamp*c for a,b,c in zip(self.pos, offset, self.vel)]
-        self.pos = [a+b for a,b in zip(self.pos, offset)]
-        #On above line: self.pos = [a +b + Actor.velDamp*c for a, b, c in zip(stuff)]
-        #if abs(self.vel[0]) > myActor.maxVel and self.acc[0]*self.vel[0] > 0:
-        #    self.acc[0] = 0
+        self.pos[0] = self.pos[0] + offset[0] + myActor.velDamp * self.vel[0]
+        self.pos[1] = self.pos[1] + offset[1] + myActor.velDamp * self.vel[1]
 
-        #self.vel = [a[0]+myActor.accDamp*a[1] for a in zip(self.vel, self.acc)]
+        if abs(self.vel[0]) > myActor.maxVelX and self.acc[0]*self.vel[0] > 0:
+            self.acc[0] = 0
 
-        #if not (self.left or self.right):
-        #    if (self.onGround):
-        #        self.acc[0] = -.2*self.vel[0]
-        #    else:
-        #        self.acc[0] = -.12*self.vel[0]
+        if abs(self.vel[1]) > myActor.maxVelY and self.acc[1]*self.vel[1] > 0:
+            self.acc[1] = 0
 
-        #if not (self.up or self.down):
-        #    if (self.onGround):
-        #        self.acc[1] = -.2*self.vel[1]
-        #    else:
-        #        self.acc[1] = -.12*self.vel[1]
+        self.vel[0] = self.vel[0] + myActor.accDamp * self.acc[0]
+        self.vel[1] = self.vel[1] + myActor.accDamp * self.acc[1]
+
+        if not (self.left or self.right):
+            if (self.onGround):
+                self.acc[0] = -.2*self.vel[0]
+            else:
+                self.acc[0] = -.12*self.vel[0]
+
+        if not (self.up or self.down):
+            if (self.onGround):
+                self.acc[1] = -.2*self.vel[1]
+            else:
+                self.acc[1] = -.12*self.vel[1]
 
         self.rect.center = self.pos
+
+
         if self.left:
             self.leftPress()
-        elif self.right:
+        if self.right:
             self.rightPress()
-        elif self.up:
+
+        if self.up:
             self.upPress()
-        elif self.down:
+        if self.down:
             self.downPress()
