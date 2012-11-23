@@ -9,19 +9,20 @@ from sprites import SpriteStripAnim
 if not pygame.font: print 'Warning, fonts disabled'
 if not pygame.mixer: print 'Warning, sound disabled'
 
-def load_image(name, colorkey=None):
-    fullname = os.path.join('data', name)
-    try:
-        image = pygame.image.load(fullname)
-    except pygame.error, message:
-        print 'Cannot load image:', name
-        raise SystemExit, message
-    image = image.convert()
-    if colorkey is not None:
-        if colorkey is -1:
-            colorkey = image.get_at((0,0))
-        image.set_colorkey(colorkey, RLEACCEL)
-    return image, image.get_rect()
+
+def load_image(file_name, colorkey=False, image_directory='images'):
+    'Loads an image, file_name, from image_directory, for use in pygame'
+    file = os.path.join(image_directory, file_name)
+    _image = pygame.image.load(file)
+    if colorkey:
+        if colorkey == -1:
+        # If the color key is -1, set it to color of upper left corner
+            colorkey = _image.get_at((0, 0))
+        _image.set_colorkey(colorkey)
+        _image = _image.convert()
+    else: # If there is no colorkey, preserve the image's alpha per pixel.
+        _image = _image.convert_alpha()
+    return _image
 
 def load_sound(name):
     class NoneSound:
@@ -74,6 +75,15 @@ def load_sound(name):
 #                pause()
 #            elif e.key == K_RETURN:
 
+class overlay(pygame.sprite.Sprite):
+    def __init__(self, width, height):
+        pygame.sprite.Sprite.__init__(self)
+        self.pos = [width/2,height/2]
+        self.image = load_image('overlay.png')
+        self.image = pygame.transform.scale(self.image, (width-40, height-40))
+        self.rect = self.image.get_rect()
+        self.initialpos = self.rect.center = self.pos
+
 class BrawlerGame():
     width = 1024
     height = 576
@@ -84,12 +94,11 @@ class BrawlerGame():
         self.timer = pygame.time.Clock()
         self.screen = pygame.display.set_mode((self.width,self.height))
 
-        self.background = pygame.image.load(os.path.join('images', 'map01.png')).convert()
+        self.background = load_image('map01.png') #pygame.image.load(os.path.join('images', 'map01.png')).convert()
         self.background = pygame.transform.scale(self.background, (self.width, self.height))
         self.screen.blit(self.background, [0,0])
 
-        self.overlay = pygame.image.load(os.path.join('images', 'overlay.png')).convert_alpha()
-        self.overlay = pygame.transform.scale(self.overlay, (self.width, self.height))
+        self.overlay = overlay(self.width,self.height)
 
         self.sprites = pygame.sprite.OrderedUpdates()
         self.actorsprites = pygame.sprite.Group()
@@ -98,12 +107,12 @@ class BrawlerGame():
         self.ticks = 0
 
         self.camera = c.Camera(self.width, self.height)
-        self.playerSprite = p.Player((500,500))
-        self.actorsprites.add(self.playerSprite)
+        #self.playerSprite = p.Player((500,500))
+        #self.actorsprites.add(self.playerSprite)
 
         # need to load some enemies somewhere
 
-        self.sprites.add(self.playerSprite)
+        #self.sprites.add(self.playerSprite)
 
 
     def update(self):
@@ -160,9 +169,9 @@ class BrawlerGame():
 
     def pause(self):
         print 'Paused';
+        self.sprites.add(self.overlay)
         while True:
         # game paused
-            self.screen.blit(self.overlay, [0,0])
             self.draw()
             for e in pygame.event.get():
                 if e.type == KEYDOWN:
@@ -171,7 +180,7 @@ class BrawlerGame():
                         sys.exit()
                     elif e.key == K_RETURN:
                         print 'Resume';
-                        self.screen.blit(self.background, [0,0])
+                        self.sprites.remove(self.overlay)
                         self.draw()
                         return True
 
