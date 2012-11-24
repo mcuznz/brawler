@@ -44,19 +44,27 @@ class myActor(pygame.sprite.Sprite):
 
         self.facingRight = True
         #Rects - left top width height
-        self.exterior = pygame.Rect(0, 0, 128, 128)
-        self.footprint = pygame.Rect(48, 96, 32, 16)
-        self.hitbox = pygame.Rect(48, 48, 32, 64)
+        #self.exterior = pygame.Rect(0, 0, 128, 128)
+        self.footprint = pygame.Rect(self.rect.left+48, self.rect.top+96, 32, 16)
+        self.hitbox = pygame.Rect(self.rect.left+48, self.rect.top+48, 32, 64)
+
+    def updateRects(self):
+        self.rect.center = self.pos
+        self.footprint.left = self.rect.left+48
+        self.footprint.top = self.rect.top+96
+        self.hitbox.left = self.rect.left+48
+        self.hitbox.top = self.rect.top+48
+
 
     def setLocation(self, pos):
         print 'setLoc'
         x,y = pos
         self.pos = [x,y]
         self.vel = [0,0]
-        self.rect.center = self.pos
+        #self.rect.center = self.pos
+        self.updateRects()
 
     def leftPress(self):
-        print 'Left'
         if self.onGround: self.acc[0] = -myActor.groundAcc
         else: self.acc[0] = -myActor.airAcc
 
@@ -64,30 +72,42 @@ class myActor(pygame.sprite.Sprite):
             self.facingRight = False
 
     def rightPress(self):
-        print 'Right'
         if self.onGround: self.acc[0] = myActor.groundAcc
         else: self.acc[0] = myActor.airAcc
 
         if False == self.left:
             self.facingRight = True
 
+    def leftAndRightPress(self):
+        if (self.onGround):
+            self.acc[0] = -.2*self.vel[0]
+        else:
+            self.acc[0] = -0.12*self.vel[0]
+
     def upPress(self):
-        print 'Up'
         if self.onGround: self.acc[1] = -myActor.groundAcc
         else: self.acc[1] = -myActor.airAcc
 
     def downPress(self):
-        print 'Down'
         if self.onGround: self.acc[1] = myActor.groundAcc
         else: self.acc[1] = myActor.airAcc
 
+    def upAndDownPress(self):
+        if (self.onGround):
+            self.acc[1] = -.2*self.vel[1]
+        else:
+            self.acc[1] = -0.12*self.vel[1]
+
+    def jump(self):
+        print 'Jump!'
+
     def offset(self, x, y):
         self.pos = [a[0] + a[1] for a in zip(self.pos, [x,y])]
-        self.rect.center = self.pos
+        self.updateRects()
 
     def reset(self):
         self.pos = self.initialpos
-        self.rect.center = self.pos
+        self.updateRects()
 
     def update(self, offset=[0.0, 0.0]):
         self.pos[0] = self.pos[0] + offset[0] + myActor.velDamp * self.vel[0]
@@ -114,15 +134,18 @@ class myActor(pygame.sprite.Sprite):
             else:
                 self.acc[1] = -.12*self.vel[1]
 
-        self.rect.center = self.pos
+        self.updateRects()
 
-
-        if self.left:
+        if self.left and self.right:
+            self.leftAndRightPress()
+        elif self.left:
             self.leftPress()
-        if self.right:
+        elif self.right:
             self.rightPress()
 
-        if self.up:
+        if self.up and self.down:
+            self.upAndDownPress()
+        elif self.up:
             self.upPress()
-        if self.down:
+        elif self.down:
             self.downPress()

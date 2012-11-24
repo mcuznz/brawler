@@ -92,11 +92,12 @@ class BrawlerGame():
         self.screen.blit(self.background, [0,0])
 
         # This is kind of ugly
-        self.backWall = m.mapobject((0, 0, self.width, self.height-250))
+        self.backWall = m.mapobject((0, 0, self.width, self.height-230))
         self.leftBound = m.mapobject((-200, 0, 190, self.height))
         self.rightBound = m.mapobject((self.width, 0, 190, self.height))
         self.lowerBound = m.mapobject((-100, self.height, self.width+100, 190))
-        self.shipBox = m.mapobject((self.width - 250, self.height - 250, 250, 250))
+        self.shipBox = m.mapobject((self.width - 250, self.height - 230, 250, 160))
+        self.shipBox.setOnlyAffectPlayer(True)
 
         self.mapObjects.add(self.backWall)
         self.mapObjects.add(self.leftBound)
@@ -104,31 +105,41 @@ class BrawlerGame():
         self.mapObjects.add(self.lowerBound)
         self.mapObjects.add(self.shipBox)
 
-        return True
-
     def mapCollision(self):
-        #for mappart in self.mapObjects:
-        #    if self.playerSprite.footprint.colliderect(mappart.rect):
-        #        print self.playerSprite.footprint
-        #        print mappart.rect
-        #        print 'Collision!'
+        for mappart in self.mapObjects:
+            if self.playerSprite.footprint.colliderect(mappart.rect):
+                print 'Collision!'
+                while self.playerSprite.footprint.colliderect(mappart.rect):
+                    if self.playerSprite.footprint.bottom > mappart.rect.top > self.playerSprite.footprint.top:
+                        self.playerSprite.offset(0,-1)
+                        self.playerSprite.vel[1] = 0
+                    if self.playerSprite.footprint.top < mappart.rect.bottom < self.playerSprite.footprint.bottom:
+                        self.playerSprite.offset(0,1)
+                        self.playerSprite.vel[1] = 0
+                    if self.playerSprite.footprint.right > mappart.rect.left > self.playerSprite.footprint.left:
+                        self.playerSprite.offset(-1,0)
+                        self.playerSprite.vel[0] = 0
+                    if self.playerSprite.footprint.left < mappart.rect.right < self.playerSprite.footprint.right:
+                        self.playerSprite.offset(1,0)
+                        self.playerSprite.vel[0] = 0
 
-        collides = pygame.sprite.groupcollide(self.actorsprites, self.mapObjects, False, False)
-        for actor in collides:
-            for mappart in collides[actor]:
-                while pygame.sprite.collide_rect(actor, mappart):
-                    if actor.rect.bottom > mappart.rect.top > actor.rect.top:
-                        actor.offset(0,-1)
-                        actor.vel[1] = 0
-                    if actor.rect.top < mappart.rect.bottom < actor.rect.bottom:
-                        actor.offset(0,1)
-                        actor.vel[1] = 0
-                    if actor.rect.right > mappart.rect.left > actor.rect.left:
-                        actor.offset(-1,0)
-                        actor.vel[0] = 0
-                    if actor.rect.left < mappart.rect.right < actor.rect.right:
-                        actor.offset(1,0)
-                        actor.vel[0] = 0
+
+        #collides = pygame.sprite.groupcollide(self.actorsprites, self.mapObjects, False, False)
+        #for actor in collides:
+        #    for mappart in collides[actor]:
+        #        while pygame.sprite.collide_rect(actor, mappart):
+        #            if actor.rect.bottom > mappart.rect.top > actor.rect.top:
+        #                actor.offset(0,-1)
+        #                actor.vel[1] = 0
+        #            if actor.rect.top < mappart.rect.bottom < actor.rect.bottom:
+        #                actor.offset(0,1)
+        #                actor.vel[1] = 0
+        #            if actor.rect.right > mappart.rect.left > actor.rect.left:
+        #                actor.offset(-1,0)
+        #                actor.vel[0] = 0
+        #            if actor.rect.left < mappart.rect.right < actor.rect.right:
+        #                actor.offset(1,0)
+        #                actor.vel[0] = 0
 
     def mainLoop(self):
         self.levelInit()
@@ -139,15 +150,16 @@ class BrawlerGame():
                 elif event.type == pygame.KEYDOWN:
                     if event.key == K_ESCAPE or event.key == K_q:
                         self.pause()
-                    elif event.key == K_w or event.key == K_UP:
+                    if event.key == K_w or event.key == K_UP:
                         self.playerSprite.up = True
-                    elif event.key == K_s or event.key == K_DOWN:
+                    if event.key == K_s or event.key == K_DOWN:
                         self.playerSprite.down = True
-                    elif event.key == K_a or event.key == K_LEFT:
+                    if event.key == K_a or event.key == K_LEFT:
                         self.playerSprite.left = True
-                    elif event.key == K_d or event.key == K_RIGHT:
+                    if event.key == K_d or event.key == K_RIGHT:
                         self.playerSprite.right = True
-                    #elif event.key == K_SPACE:
+                    if event.key == K_SPACE:
+                        self.playerSprite.jump()
                         #if self.recording:
                         #    self.stopRecording()
                         #elif pygame.sprite.spritecollideany(self.playerSprite, self.recordersprites):
@@ -156,11 +168,11 @@ class BrawlerGame():
                 elif event.type == pygame.KEYUP:
                     if event.key == K_a or event.key == K_LEFT:
                         self.playerSprite.left = False
-                    elif event.key == K_d or event.key == K_RIGHT:
+                    if event.key == K_d or event.key == K_RIGHT:
                         self.playerSprite.right = False
-                    elif event.key == K_w or event.key == K_UP:
+                    if event.key == K_w or event.key == K_UP:
                         self.playerSprite.up = False
-                    elif event.key == K_s or event.key == K_DOWN:
+                    if event.key == K_s or event.key == K_DOWN:
                         self.playerSprite.down = False
 
             self.update()
