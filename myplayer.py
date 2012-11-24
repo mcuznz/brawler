@@ -1,29 +1,20 @@
 import pygame
 import sys, os
 from sprites import SpriteStripAnim
+#import mapobject
 
-def load_image(file_name, colorkey=False, image_directory='images'):
-    'Loads an image, file_name, from image_directory, for use in pygame'
-    file = os.path.join(image_directory, file_name)
-    _image = pygame.image.load(file)
-    if colorkey:
-        if colorkey == -1:
-        # If the color key is -1, set it to color of upper left corner
-            colorkey = _image.get_at((0, 0))
-        _image.set_colorkey(colorkey)
-        _image = _image.convert()
-    else: # If there is no colorkey, preserve the image's alpha per pixel.
-        _image = _image.convert_alpha()
-    return _image
-
-
-class myActor(pygame.sprite.Sprite):
-    maxVelX = 70
-    maxVelY = 35
-    velDamp = .1
-    accDamp = .35
-    groundAcc = 8.4
-    airAcc = 5
+class myPlayer(pygame.sprite.Sprite):
+    
+    # these are sensible defaults that are overriden by the level
+    maxVel = [10, 8]
+    velDamp = [0.2, 0.2]
+    accDamp = [0.2, 0.2]
+    groundAcc = [1, 0.8]
+    airAcc = [0.6, 0.5]
+    grav = 1
+    
+    speedMultiplier = 1.0
+    gravMultiplier = 1.0
 
     footprintOffset = [48, 96]
     footprintSize = [32, 16]
@@ -45,15 +36,12 @@ class myActor(pygame.sprite.Sprite):
     attackCooldownInc = 1
     currentAttackFrame = 0
     
-    # these control how fast the hobo goes up.. and how fast he comes down
-    jumpVelStart = 20
-    grav = 1.1
-
+    jumpVelStart = 16
     jumpVel = 0.0
     jumpHeight = 0.0
     jumpDelta = 0.0
 
-    minWalkVel = 3
+    minWalkVel = 2
 
     def __init__(self, acc):
         pygame.sprite.Sprite.__init__(self)
@@ -85,6 +73,20 @@ class myActor(pygame.sprite.Sprite):
         self.hitbox = pygame.Rect(self.rect.left + self.hitboxOffset[0], self.rect.top + self.hitboxOffset[1], self.hitboxSize[0], self.hitboxSize[1])
         self.punchbox = pygame.Rect(self.rect.left + self.punchboxOffsets[0][0], self.rect.top + self.punchboxOffsets[0][1], self.punchboxSize[0], self.punchboxSize[1])
 
+    def load_image(file_name, colorkey=False, image_directory='images'):
+        'Loads an image, file_name, from image_directory, for use in pygame'
+        file = os.path.join(image_directory, file_name)
+        _image = pygame.image.load(file)
+        if colorkey:
+            if colorkey == -1:
+            # If the color key is -1, set it to color of upper left corner
+                colorkey = _image.get_at((0, 0))
+            _image.set_colorkey(colorkey)
+            _image = _image.convert()
+        else: # If there is no colorkey, preserve the image's alpha per pixel.
+            _image = _image.convert_alpha()
+        return _image
+
     def jump(self):
         if self.onGround is True:
             self.jumpVel = self.jumpVelStart
@@ -92,7 +94,6 @@ class myActor(pygame.sprite.Sprite):
 
     def attack(self):
         if self.canAttack == True:
-            print 'Attack!'
             self.attacking = True
             self.canAttack = False
             self.attackCooldownFrames = self.attackCooldownFrames + self.attackCooldownInc
@@ -111,7 +112,6 @@ class myActor(pygame.sprite.Sprite):
             self.punchbox.top = self.rect.top + self.punchboxOffsets[1][1]
 
     def setLocation(self, pos):
-        print 'setLoc'
         x,y = pos
         self.pos = [x,y]
         self.vel = [0,0]
@@ -119,15 +119,15 @@ class myActor(pygame.sprite.Sprite):
         self.updateRects()
 
     def leftPress(self):
-        if self.onGround: self.acc[0] = -myActor.groundAcc
-        else: self.acc[0] = -myActor.airAcc
+        if self.onGround: self.acc[0] = -self.groundAcc[0] * self.speedMultiplier
+        else: self.acc[0] = -self.airAcc[0] * self.speedMultiplier
 
         if False == self.right:
             self.facingRight = False
 
     def rightPress(self):
-        if self.onGround: self.acc[0] = myActor.groundAcc
-        else: self.acc[0] = myActor.airAcc
+        if self.onGround: self.acc[0] = self.groundAcc[0] * self.speedMultiplier
+        else: self.acc[0] = self.airAcc[0] * self.speedMultiplier
 
         if False == self.left:
             self.facingRight = True
@@ -139,12 +139,12 @@ class myActor(pygame.sprite.Sprite):
             self.acc[0] = -0.12*self.vel[0]
 
     def upPress(self):
-        if self.onGround: self.acc[1] = -myActor.groundAcc
-        else: self.acc[1] = -myActor.airAcc
-
+        if self.onGround: self.acc[1] = -self.groundAcc[1] * self.speedMultiplier
+        else: self.acc[1] = -self.airAcc[1] * self.speedMultiplier
+        
     def downPress(self):
-        if self.onGround: self.acc[1] = myActor.groundAcc
-        else: self.acc[1] = myActor.airAcc
+        if self.onGround: self.acc[1] = self.groundAcc[1] * self.speedMultiplier
+        else: self.acc[1] = self.airAcc[1] * self.speedMultiplier
 
     def upAndDownPress(self):
         if self.onGround:
@@ -160,30 +160,36 @@ class myActor(pygame.sprite.Sprite):
         self.pos = self.initialpos
         self.updateRects()
 
+    def mapCollide(self, mapParts):
+        
+        for part in mapParts:
+            pass
+
+
     def update(self, offset=[0.0, 0.0]):
         tempJumpHeight = self.jumpHeight
         self.jumpHeight = max(self.jumpHeight + self.jumpVel, 0)
         self.jumpDelta = self.jumpHeight - tempJumpHeight
         
-        self.pos[0] = self.pos[0] + offset[0] + myActor.velDamp * self.vel[0]
-        self.pos[1] = self.pos[1] + offset[1] + myActor.velDamp * self.vel[1] - self.jumpDelta
+        self.pos[0] = self.pos[0] + offset[0] + self.velDamp[0] * self.vel[0]
+        self.pos[1] = self.pos[1] + offset[1] + self.velDamp[1] * self.vel[1] - self.jumpDelta
 
-        if abs(self.vel[0]) > myActor.maxVelX and self.acc[0]*self.vel[0] > 0:
+        if abs(self.vel[0]) > (self.maxVel[0] * self.speedMultiplier) and self.acc[0]*self.vel[0] > 0:
             self.acc[0] = 0
 
-        if abs(self.vel[1]) > myActor.maxVelY and self.acc[1]*self.vel[1] > 0:
+        if abs(self.vel[1]) > (self.maxVel[1] * self.speedMultiplier) and self.acc[1]*self.vel[1] > 0:
             self.acc[1] = 0
 
-        self.vel[0] = self.vel[0] + myActor.accDamp * self.acc[0]
-        self.vel[1] = self.vel[1] + myActor.accDamp * self.acc[1]
+        self.vel[0] = self.vel[0] + self.accDamp[0] * self.acc[0]
+        self.vel[1] = self.vel[1] + self.accDamp[1] * self.acc[1]
         
         if self.jumpHeight == 0:
             self.jumpVel = 0
             self.onGround = True
         else:
-            self.jumpVel = self.jumpVel - self.grav
+            self.jumpVel = self.jumpVel - (self.grav * self.gravMultiplier)
         
-        if (abs(self.vel[0]) > self.minWalkVel) or (abs(self.vel[1]) > self.minWalkVel*0.8) :
+        if (abs(self.vel[0]) > self.minWalkVel) or (abs(self.vel[1]) > self.minWalkVel) :
             self.walking = True
         else:
             self.walking = False
@@ -212,7 +218,8 @@ class myActor(pygame.sprite.Sprite):
 
         self.attackCooldownFrames = max(self.attackMinCooldown, self.attackCooldownFrames - self.attackCooldownRate)
 
-        if self.walking:
+        #if self.walking or self.left or self.right or self.up or self.down:
+        if self.left or self.right or self.up or self.down:
             if not self.facingRight:
                 if self.whichStrip != 3:
                     self.whichStrip = 3

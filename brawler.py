@@ -1,9 +1,10 @@
 ###################
 import pygame
 import sys, os
-import player as p
-import mapobject as m
+from myplayer import myPlayer
+import mapobject
 from pygame.locals import *
+import level
 from sprites import SpriteStripAnim
 
 if not pygame.font: print 'Warning, fonts disabled'
@@ -59,77 +60,78 @@ class BrawlerGame():
         pygame.display.set_caption('ULTRA HOBO SPACE FIGHT')
 
         self.overlay = overlay(self.width,self.height)
-
-        self.sprites = pygame.sprite.OrderedUpdates()
-        self.actorsprites = pygame.sprite.Group()
-        self.enemies = pygame.sprite.Group()
-        self.enemyProjectiles = pygame.sprite.Group()
-        self.jump = False
-        self.attack = False
-        self.ticks = 0
-
-        self.playerSprite = p.Player((200,450))
-        self.actorsprites.add(self.playerSprite)
-
-        # need to load some enemies somewhere
-        self.sprites.add(self.playerSprite)
-
-        self.mapObjects = pygame.sprite.Group()
+        self.reload()
 
     def update(self):
         self.actorsprites.update()
 
     def draw(self):
         #print 'Draw'
-        self.sprites.clear(self.screen, self.background)
+        self.sprites.clear(self.screen, self.level.background)
         things = self.sprites.draw(self.screen)
         
         if self.debug:
+            #Player aspects
             pygame.draw.rect(self.screen, pygame.color.Color("green"), self.playerSprite.rect, 1)
             pygame.draw.rect(self.screen, pygame.color.Color("blue"), self.playerSprite.hitbox, 1)
             pygame.draw.rect(self.screen, pygame.color.Color("white"), self.playerSprite.footprint, 1)
             if self.playerSprite.attacking:
                 pygame.draw.rect(self.screen, pygame.color.Color("red"), self.playerSprite.punchbox, 1)
+            
+            for mappart in self.level.mapObjects:
+                pygame.draw.rect(self.screen, pygame.color.Color("yellow"), mappart.rect, 2)
         
         pygame.display.update(things)
         pygame.display.flip()
 
     def levelInit(self):
         print 'Level Init'
-        self.background = load_image('brawler-arena-mockup.jpg') #pygame.image.load(os.path.join('images', 'map01.png')).convert()
-        self.background = pygame.transform.scale(self.background, (self.width, self.height))
-        self.screen.blit(self.background, [0,0])
+        # should have some sort of parameter
+        self.level = level.level(1, self.width, self.height)
 
-        # This is kind of ugly
-        self.backWall = m.mapobject((0, 0, self.width, self.height-230))
-        self.leftBound = m.mapobject((-200, 0, 190, self.height))
-        self.rightBound = m.mapobject((self.width, 0, 190, self.height))
-        self.lowerBound = m.mapobject((-100, self.height, self.width+100, 190))
-        self.shipBox = m.mapobject((self.width - 250, self.height - 230, 250, 160))
-        self.shipBox.setOnlyAffectPlayer(True)
+        self.screen.blit(self.level.background, [0,0])
+        self.playerSprite.setLocation(self.level.playerStart)
 
-        self.mapObjects.add(self.backWall)
-        self.mapObjects.add(self.leftBound)
-        self.mapObjects.add(self.rightBound)
-        self.mapObjects.add(self.lowerBound)
-        self.mapObjects.add(self.shipBox)
+        self.playerSprite.speedMultiplier = 1.0
+        self.playerSprite.gravMultiplier = 1.0
 
-    def mapCollision(self):
-        for mappart in self.mapObjects:
-            if self.playerSprite.footprint.colliderect(mappart.rect):
-                while self.playerSprite.footprint.colliderect(mappart.rect):
-                    if self.playerSprite.footprint.bottom > mappart.rect.top > self.playerSprite.footprint.top:
-                        self.playerSprite.offset(0,-1)
-                        self.playerSprite.vel[1] = 0
-                    if self.playerSprite.footprint.top < mappart.rect.bottom < self.playerSprite.footprint.bottom:
-                        self.playerSprite.offset(0,1)
-                        self.playerSprite.vel[1] = 0
-                    if self.playerSprite.footprint.right > mappart.rect.left > self.playerSprite.footprint.left:
-                        self.playerSprite.offset(-1,0)
-                        self.playerSprite.vel[0] = 0
-                    if self.playerSprite.footprint.left < mappart.rect.right < self.playerSprite.footprint.right:
-                        self.playerSprite.offset(1,0)
-                        self.playerSprite.vel[0] = 0
+        for actor in self.actorsprites:
+            actor.velDamp = self.level.velDamp
+            actor.accDamp = self.level.accDamp
+            actor.grav = self.level.grav
+
+#    def mapCollision(self):
+#        for mappart in self.level.mapObjects:
+#            if self.playerSprite.footprint.colliderect(mappart.rect):
+#                print 'Collide with',mappart.rect
+                #while self.playerSprite.footprint.colliderect(mappart.rect):
+
+                
+
+                    #print 'Still Colliding...'
+                    #if self.playerSprite.footprint.right > mappart.rect.left:# > self.playerSprite.footprint.left:
+                    #    print 'Collide: Right'
+                    #    self.playerSprite.offset(mappart.rect.left - self.playerSprite.footprint.right, 0)
+                    #    self.playerSprite.vel[0] = self.playerSprite.vel[0] * mappart.bounceFactor * - 1 #min(0, self.playerSprite.vel[0])
+                    #    continue
+                    #elif self.playerSprite.footprint.left < mappart.rect.right:# < self.playerSprite.footprint.right:
+                    #    print 'Collide: Left'
+                    #    self.playerSprite.offset(self.playerSprite.footprint.left - mappart.rect.right, 0)
+                    #    self.playerSprite.vel[0] = self.playerSprite.vel[0] * mappart.bounceFactor * - 1
+                    #    continue
+                    #if self.playerSprite.footprint.bottom > mappart.rect.top:# > self.playerSprite.footprint.top:
+                    #    print 'Collide: Bottom'
+                    #    self.playerSprite.offset(0, mappart.rect.top - self.playerSprite.footprint.bottom)
+                    #    self.playerSprite.vel[1] = self.playerSprite.vel[1] * mappart.bounceFactor * - 1
+                    #    continue
+                    #elif self.playerSprite.footprint.top < mappart.rect.bottom:# < self.playerSprite.footprint.bottom:
+                    #    print 'Collide: Top'
+                    #    self.playerSprite.offset(0, self.playerSprite.footprint.top - mappart.rect.bottom)
+                    #    self.playerSprite.vel[1] = self.playerSprite.vel[1] * mappart.bounceFactor * - 1
+                    #    continue
+                    #
+                    #print '---Bad Collision:',self.playerSprite.footprint,mappart.rect
+                    #break
 
     #def damageCollissions(self):
     
@@ -153,7 +155,6 @@ class BrawlerGame():
         #                actor.vel[0] = 0
 
     def mainLoop(self):
-        self.levelInit()
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -184,8 +185,11 @@ class BrawlerGame():
                     if event.key == K_s or event.key == K_DOWN:
                         self.playerSprite.down = False
 
+            #self.mapCollision()
+            for actor in self.actorsprites:
+                actor.mapCollide(self.level.mapObjects)
+            
             self.update()
-            self.mapCollision()
             self.draw()
             #if pygame.sprite.spritecollideany(self.playerSprite, self.mapObjects):
             #    print 'Collision'
@@ -208,12 +212,28 @@ class BrawlerGame():
                     if e.key == K_ESCAPE or e.key == K_q:
                         print 'Exiting';
                         sys.exit()
+                    if e.key == K_r:
+                        print 'Reloading';
+                        self.reload()
+                        self.sprites.remove(self.overlay)
+                        return True
                     elif e.key == K_RETURN:
                         print 'Resume';
                         self.sprites.remove(self.overlay)
-                        #self.draw()
                         return True
 
+    def reload(self):
+        self.sprites = pygame.sprite.OrderedUpdates()
+        self.actorsprites = pygame.sprite.Group()
+        self.enemies = pygame.sprite.Group()
+        self.enemyProjectiles = pygame.sprite.Group()
+        self.playerSprite = myPlayer((200,450))
+        self.actorsprites.add(self.playerSprite)
+        self.sprites.add(self.playerSprite)
+
+        self.levelInit()
+
+
 if __name__ == '__main__':
-    redo = BrawlerGame()
-    redo.mainLoop()
+    brawler = BrawlerGame()
+    brawler.mainLoop()
