@@ -37,7 +37,9 @@ class myActor(pygame.sprite.Sprite):
     onGround, walking, facingRight = True, False, True
 
     attacking = False
+    canAttack = True
     attackFrames = 12
+    attackCooldownFrames = 12
     currentAttackFrame = 0
     
     # these control how fast the hobo goes up.. and how fast he comes down
@@ -86,9 +88,10 @@ class myActor(pygame.sprite.Sprite):
             self.onGround = False
 
     def attack(self):
-        print 'Attack!'
-        self.attacking = True
-        self.currentAttackFrame = 0
+        if self.canAttack == True:
+            print 'Attack!'
+            self.attacking = True
+            self.canAttack = False
 
     def updateRects(self):
         self.rect.center = self.pos
@@ -195,11 +198,13 @@ class myActor(pygame.sprite.Sprite):
 
         self.updateRects()
 
-        if self.attacking:
+        if self.attacking == True or self.canAttack == False:
             self.currentAttackFrame = self.currentAttackFrame + 1
             if self.currentAttackFrame > self.attackFrames:
-                self.currentAttackFrame = 0
                 self.attacking = False
+                if self.currentAttackFrame > (self.attackFrames + self.attackCooldownFrames):
+                    self.currentAttackFrame = 0
+                    self.canAttack = True
 
         if self.walking:
             if not self.facingRight:

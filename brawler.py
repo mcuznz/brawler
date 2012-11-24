@@ -3,7 +3,6 @@ import pygame
 import sys, os
 import player as p
 import mapobject as m
-import camera as c
 from pygame.locals import *
 from sprites import SpriteStripAnim
 
@@ -69,7 +68,6 @@ class BrawlerGame():
         self.attack = False
         self.ticks = 0
 
-        self.camera = c.Camera(self.width, self.height)
         self.playerSprite = p.Player((200,450))
         self.actorsprites.add(self.playerSprite)
 
@@ -79,7 +77,6 @@ class BrawlerGame():
         self.mapObjects = pygame.sprite.Group()
 
     def update(self):
-        #off = self.camera.update(self.playerSprite.pos)
         self.actorsprites.update()
 
     def draw(self):
@@ -176,7 +173,7 @@ class BrawlerGame():
                         self.playerSprite.jump()
                     if event.key == K_f:
                         self.playerSprite.attack()
-
+                        
                 elif event.type == pygame.KEYUP:
                     if event.key == K_a or event.key == K_LEFT:
                         self.playerSprite.left = False
