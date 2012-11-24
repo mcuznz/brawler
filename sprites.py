@@ -1,9 +1,17 @@
 import pygame
  
+
 class spritesheet(object):
-    def __init__(self, filename):
+    def __init__(self, filename, colorkey=False):
         try:
-            self.sheet = pygame.image.load(filename).convert()
+            self.sheet = pygame.image.load(filename)
+            if colorkey:
+                if colorkey == -1:
+                    colorkey = self.sheet.get_at((0, 0))
+                self.sheet.set_colorkey(colorkey, pygame.RLEACCEL)
+                self.sheet = self.sheet.convert()
+            else:
+                self.sheet = self.sheet.convert_alpha()
         except pygame.error, message:
             print 'Unable to load spritesheet image:', filename
             raise SystemExit, message
@@ -11,12 +19,15 @@ class spritesheet(object):
     def image_at(self, rectangle, colorkey = None):
         "Loads image from x,y,x+offset,y+offset"
         rect = pygame.Rect(rectangle)
-        image = pygame.Surface(rect.size).convert()
+        image = pygame.Surface(rect.size, pygame.SRCALPHA).convert_alpha()
         image.blit(self.sheet, (0, 0), rect)
-        if colorkey is not None:
-            if colorkey is -1:
+        if colorkey:
+            if colorkey == -1:
                 colorkey = image.get_at((0,0))
             image.set_colorkey(colorkey, pygame.RLEACCEL)
+            image = image.convert()
+        else:
+            image = image.convert_alpha()
         return image
     # Load a whole bunch of images and return them as a list
     def images_at(self, rects, colorkey = None, mirror = False):

@@ -10,7 +10,6 @@ from sprites import SpriteStripAnim
 if not pygame.font: print 'Warning, fonts disabled'
 if not pygame.mixer: print 'Warning, sound disabled'
 
-
 def load_image(file_name, colorkey=False, image_directory='images'):
     'Loads an image, file_name, from image_directory, for use in pygame'
     file = os.path.join(image_directory, file_name)
@@ -50,17 +49,22 @@ class overlay(pygame.sprite.Sprite):
 class BrawlerGame():
     width = 1024
     height = 576
+    debug = True
+    #debug = False
 
     def __init__(self):
         # some initialization, creates the window, loads the background
         pygame.init()
         self.timer = pygame.time.Clock()
         self.screen = pygame.display.set_mode((self.width,self.height))
+        pygame.display.set_caption('ULTRA HOBO SPACE FIGHT')
 
         self.overlay = overlay(self.width,self.height)
 
         self.sprites = pygame.sprite.OrderedUpdates()
         self.actorsprites = pygame.sprite.Group()
+        self.enemies = pygame.sprite.Group()
+        self.enemyProjectiles = pygame.sprite.Group()
         self.jump = False
         self.attack = False
         self.ticks = 0
@@ -82,6 +86,14 @@ class BrawlerGame():
         #print 'Draw'
         self.sprites.clear(self.screen, self.background)
         things = self.sprites.draw(self.screen)
+        
+        if self.debug:
+            pygame.draw.rect(self.screen, pygame.color.Color("green"), self.playerSprite.rect, 1)
+            pygame.draw.rect(self.screen, pygame.color.Color("blue"), self.playerSprite.hitbox, 1)
+            pygame.draw.rect(self.screen, pygame.color.Color("white"), self.playerSprite.footprint, 1)
+            if self.playerSprite.attacking:
+                pygame.draw.rect(self.screen, pygame.color.Color("red"), self.playerSprite.punchbox, 1)
+        
         pygame.display.update(things)
         pygame.display.flip()
 
@@ -108,7 +120,6 @@ class BrawlerGame():
     def mapCollision(self):
         for mappart in self.mapObjects:
             if self.playerSprite.footprint.colliderect(mappart.rect):
-                print 'Collision!'
                 while self.playerSprite.footprint.colliderect(mappart.rect):
                     if self.playerSprite.footprint.bottom > mappart.rect.top > self.playerSprite.footprint.top:
                         self.playerSprite.offset(0,-1)
@@ -122,6 +133,9 @@ class BrawlerGame():
                     if self.playerSprite.footprint.left < mappart.rect.right < self.playerSprite.footprint.right:
                         self.playerSprite.offset(1,0)
                         self.playerSprite.vel[0] = 0
+
+    #def damageCollissions(self):
+    
 
 
         #collides = pygame.sprite.groupcollide(self.actorsprites, self.mapObjects, False, False)
@@ -160,10 +174,8 @@ class BrawlerGame():
                         self.playerSprite.right = True
                     if event.key == K_SPACE:
                         self.playerSprite.jump()
-                        #if self.recording:
-                        #    self.stopRecording()
-                        #elif pygame.sprite.spritecollideany(self.playerSprite, self.recordersprites):
-                        #    self.startRecording()
+                    if event.key == K_f:
+                        self.playerSprite.attack()
 
                 elif event.type == pygame.KEYUP:
                     if event.key == K_a or event.key == K_LEFT:
@@ -176,8 +188,8 @@ class BrawlerGame():
                         self.playerSprite.down = False
 
             self.update()
-            self.draw()
             self.mapCollision()
+            self.draw()
             #if pygame.sprite.spritecollideany(self.playerSprite, self.mapObjects):
             #    print 'Collision'
             #    i+=1
