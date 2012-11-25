@@ -63,7 +63,7 @@ class BrawlerGame():
         self.reload()
 
     def update(self):
-        self.actorsprites.update()
+        self.actorsprites.update(self.level.mapObjects)
 
     def draw(self):
         #print 'Draw'
@@ -100,60 +100,6 @@ class BrawlerGame():
             actor.accDamp = self.level.accDamp
             actor.grav = self.level.grav
 
-#    def mapCollision(self):
-#        for mappart in self.level.mapObjects:
-#            if self.playerSprite.footprint.colliderect(mappart.rect):
-#                print 'Collide with',mappart.rect
-                #while self.playerSprite.footprint.colliderect(mappart.rect):
-
-                
-
-                    #print 'Still Colliding...'
-                    #if self.playerSprite.footprint.right > mappart.rect.left:# > self.playerSprite.footprint.left:
-                    #    print 'Collide: Right'
-                    #    self.playerSprite.offset(mappart.rect.left - self.playerSprite.footprint.right, 0)
-                    #    self.playerSprite.vel[0] = self.playerSprite.vel[0] * mappart.bounceFactor * - 1 #min(0, self.playerSprite.vel[0])
-                    #    continue
-                    #elif self.playerSprite.footprint.left < mappart.rect.right:# < self.playerSprite.footprint.right:
-                    #    print 'Collide: Left'
-                    #    self.playerSprite.offset(self.playerSprite.footprint.left - mappart.rect.right, 0)
-                    #    self.playerSprite.vel[0] = self.playerSprite.vel[0] * mappart.bounceFactor * - 1
-                    #    continue
-                    #if self.playerSprite.footprint.bottom > mappart.rect.top:# > self.playerSprite.footprint.top:
-                    #    print 'Collide: Bottom'
-                    #    self.playerSprite.offset(0, mappart.rect.top - self.playerSprite.footprint.bottom)
-                    #    self.playerSprite.vel[1] = self.playerSprite.vel[1] * mappart.bounceFactor * - 1
-                    #    continue
-                    #elif self.playerSprite.footprint.top < mappart.rect.bottom:# < self.playerSprite.footprint.bottom:
-                    #    print 'Collide: Top'
-                    #    self.playerSprite.offset(0, self.playerSprite.footprint.top - mappart.rect.bottom)
-                    #    self.playerSprite.vel[1] = self.playerSprite.vel[1] * mappart.bounceFactor * - 1
-                    #    continue
-                    #
-                    #print '---Bad Collision:',self.playerSprite.footprint,mappart.rect
-                    #break
-
-    #def damageCollissions(self):
-    
-
-
-        #collides = pygame.sprite.groupcollide(self.actorsprites, self.mapObjects, False, False)
-        #for actor in collides:
-        #    for mappart in collides[actor]:
-        #        while pygame.sprite.collide_rect(actor, mappart):
-        #            if actor.rect.bottom > mappart.rect.top > actor.rect.top:
-        #                actor.offset(0,-1)
-        #                actor.vel[1] = 0
-        #            if actor.rect.top < mappart.rect.bottom < actor.rect.bottom:
-        #                actor.offset(0,1)
-        #                actor.vel[1] = 0
-        #            if actor.rect.right > mappart.rect.left > actor.rect.left:
-        #                actor.offset(-1,0)
-        #                actor.vel[0] = 0
-        #            if actor.rect.left < mappart.rect.right < actor.rect.right:
-        #                actor.offset(1,0)
-        #                actor.vel[0] = 0
-
     def mainLoop(self):
         while True:
             for event in pygame.event.get():
@@ -185,20 +131,8 @@ class BrawlerGame():
                     if event.key == K_s or event.key == K_DOWN:
                         self.playerSprite.down = False
 
-            #self.mapCollision()
-            for actor in self.actorsprites:
-                actor.mapCollide(self.level.mapObjects)
-            
             self.update()
             self.draw()
-            #if pygame.sprite.spritecollideany(self.playerSprite, self.mapObjects):
-            #    print 'Collision'
-            #    i+=1
-            #    break;
-            #elif self.playerSprite.vel[1] > 250:
-            #    if self.recording: self.stopRecording()
-            #    self.resetLevel()
-            #    break;
             self.timer.tick(60)
 
     def pause(self):

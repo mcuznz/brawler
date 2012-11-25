@@ -32,18 +32,16 @@ class level():
 		self.background = pygame.transform.scale(self.background, (self.width, self.height))
 
 		# Back Wall
-		#self.mapObjects.add(m.mapobject((0, 0, self.width, self.height-230), False, 0.1))
+		self.mapObjects.add(m.mapobject((0, 0, self.width, self.height-230), False, 0.1))
 		# Left Side
-		#self.mapObjects.add(m.mapobject((-200, 0, 190, self.height), False, 0.1))
+		self.mapObjects.add(m.mapobject((-200, 0, 190, self.height), False, 0.1))
 		# Right Side
-		#self.mapObjects.add(m.mapobject((self.width + 10, 0, 190, self.height), False, 0.1))
+		self.mapObjects.add(m.mapobject((self.width + 10, 0, 190, self.height), False, 0.1))
 		# Bottom
-		#self.mapObjects.add(m.mapobject((-100, self.height, self.width+100, 190), False, 0.1))
+		self.mapObjects.add(m.mapobject((-100, self.height, self.width+100, 190), False, 0.1))
 		# Ship Ramp
-		#self.mapObjects.add(m.mapobject((self.width - 250, self.height - 230, 260, 160), True, 0.4))
+		self.mapObjects.add(m.mapobject((self.width - 250, self.height - 230, 260, 160), True, 0.4))
 
-		self.mapObjects.add(m.mapobject((600, 300, 150, 150), True, 0.5))
-		
 		self.playerStart = (125,375)
 
 	def load_image(self, file_name, colorkey=False, image_directory='images'):

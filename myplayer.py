@@ -160,19 +160,16 @@ class myPlayer(pygame.sprite.Sprite):
         self.pos = self.initialpos
         self.updateRects()
 
-    def mapCollide(self, mapParts):
+    def update(self, mapData):
         
-        for part in mapParts:
-            pass
-
-
-    def update(self, offset=[0.0, 0.0]):
         tempJumpHeight = self.jumpHeight
+        tempFootprint = self.footprint
+        
         self.jumpHeight = max(self.jumpHeight + self.jumpVel, 0)
         self.jumpDelta = self.jumpHeight - tempJumpHeight
         
-        self.pos[0] = self.pos[0] + offset[0] + self.velDamp[0] * self.vel[0]
-        self.pos[1] = self.pos[1] + offset[1] + self.velDamp[1] * self.vel[1] - self.jumpDelta
+        self.pos[0] = self.pos[0] + self.velDamp[0] * self.vel[0]
+        self.pos[1] = self.pos[1] + self.velDamp[1] * self.vel[1] - self.jumpDelta
 
         if abs(self.vel[0]) > (self.maxVel[0] * self.speedMultiplier) and self.acc[0]*self.vel[0] > 0:
             self.acc[0] = 0
@@ -207,6 +204,65 @@ class myPlayer(pygame.sprite.Sprite):
                 self.acc[1] = -.12*self.vel[1]
 
         self.updateRects()
+        
+        # With the Rectangles Updated, test mapData for Collissions
+        for block in mapData:
+            if self.footprint.colliderect(block.rect):
+                print "Collide with",block.rect
+
+                distLeft = self.footprint.right - block.rect.left
+                distRight = block.rect.right - self.footprint.left
+                distTop = self.footprint.bottom - block.rect.top
+                distBottom = block.rect.bottom - self.footprint.top
+
+                # I feel like this could be completely refactored... but for now, it works
+                if distLeft < distRight:
+                    if distTop < distBottom:
+                        if distLeft == distTop:
+                            self.offset(distLeft*-1, distTop*-1)
+                            self.vel[0] = min(self.vel[0], 0)
+                            self.vel[1] = min(self.vel[1], 0)
+                        elif distLeft < distTop:
+                            self.offset(distLeft*-1, 0)
+                            self.vel[0] = min(self.vel[0], 0)
+                        else:
+                            self.offset(0, distTop*-1)
+                            self.vel[1] = min(self.vel[1], 0)
+                    else:
+                        if distLeft == distBottom:
+                            self.offset(distLeft*-1, distBottom)
+                            self.vel[0] = min(self.vel[0], 0)
+                            self.vel[1] = max(self.vel[1], 0)
+                        elif distLeft < distBottom:
+                            self.offset(distLeft*-1, 0)
+                            self.vel[0] = min(self.vel[0], 0)
+                        else:
+                            self.offset(0, distBottom)
+                            self.vel[1] = max(self.vel[1], 0)
+                else:
+                    if distTop < distBottom:
+                        if distRight == distTop:
+                            self.offset(distRight, distTop*-1)
+                            self.vel[0] = max(self.vel[0], 0)
+                            self.vel[1] = min(self.vel[1], 0)
+                        elif distRight < distTop:
+                            self.offset(distRight, 0)
+                            self.vel[0] = max(self.vel[0], 0)
+                        else:
+                            self.offset(0, distTop*-1)
+                            self.vel[1] = min(self.vel[1], 0)
+                    else:
+                        if distRight == distBottom:
+                            self.offset(distRight, distBottom)
+                            self.vel[0] = max(self.vel[0], 0)
+                            self.vel[1] = min(self.vel[1], 0)
+                        elif distRight < distBottom:
+                            self.offset(distRight, 0)
+                            self.vel[0] = max(self.vel[0], 0)
+                        else:
+                            self.offset(0, distBottom)
+                            self.vel[1] = min(self.vel[1], 0)
+                        
 
         if self.attacking == True or self.canAttack == False:
             self.currentAttackFrame = self.currentAttackFrame + 1
