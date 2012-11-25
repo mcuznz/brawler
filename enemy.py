@@ -2,6 +2,7 @@ import pygame
 import sys, os
 from sprites import SpriteStripAnim
 import math
+import random
 #import mapobject
 
 class enemyHopper(pygame.sprite.Sprite):
@@ -25,8 +26,8 @@ class enemyHopper(pygame.sprite.Sprite):
 
 	accel = [10, 6]
 	
-	health = 100.0
-	maxHealth = 100.0
+	health = 60.0
+	maxHealth = 60.0
 	
 	damageOnCollide = True
 	damage = 15
@@ -112,9 +113,13 @@ class enemyHopper(pygame.sprite.Sprite):
 		
 		self.setScale(scale)
 
-	def takeHit(self, damage):
+	def takeHit(self, brawler, damage):
 		self.health = self.health - damage
 		if self.health <= 0:
+			newHopper = enemyHopper((int(random.randrange(100,924)),int(random.randrange(376,520))), 1.0)
+			newHopper.health = 60
+			brawler.addEnemy(newHopper)
+
 			print "It's dead!"
 			self.shadow.kill()
 			self.kill()

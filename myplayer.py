@@ -60,7 +60,7 @@ class myPlayer(pygame.sprite.Sprite):
         self.vel = [0.0,0.0]
         self.acc = [0.0, 0.0]
 
-        self.frameHold = 4
+        self.frameHold = 8
 
         self.strips = [
             SpriteStripAnim(os.path.join("images", "player_frames", "hobo-still.png"), (0,0,128,128),

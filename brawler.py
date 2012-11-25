@@ -102,7 +102,7 @@ class BrawlerGame():
                 if self.playerSprite.punchbox.colliderect(baddie.hitbox) and \
                     self.playerSprite.footprintCheck.colliderect(baddie.footprintCheck):
                     somethingHit = True
-                    baddie.takeHit(self.playerSprite.damage)
+                    baddie.takeHit(self, self.playerSprite.damage)
         
         if somethingHit:
             self.playerSprite.attacking = False
@@ -236,6 +236,16 @@ class BrawlerGame():
 
         self.sprites.change_layer(self.playerSprite.shadow, -1)
 
+    def wrapper(func, *args):
+        func(*args())
+
+    def addEnemy(self, baddie):
+        print 'Adding Enemy'
+        self.sprites.add(baddie.shadow)
+        self.sprites.add(baddie)
+        self.enemies.add(baddie)
+        self.actorsprites.add(baddie)
+        self.sprites.change_layer(baddie.shadow, -1)
 
 if __name__ == '__main__':
     brawler = BrawlerGame()
