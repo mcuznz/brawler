@@ -1,6 +1,7 @@
 import pygame
 import sys, os
 from sprites import SpriteStripAnim
+import math
 #import mapobject
 
 class myPlayer(pygame.sprite.Sprite):
@@ -63,7 +64,7 @@ class myPlayer(pygame.sprite.Sprite):
         self.whichStrip = 0
         self.strips[self.whichStrip].iter()
         self.image = self.strips[self.whichStrip].next()
-
+        
         self.rect = self.image.get_rect()
         self.initialpos = self.rect.center = self.pos
 
@@ -73,7 +74,13 @@ class myPlayer(pygame.sprite.Sprite):
         self.hitbox = pygame.Rect(self.rect.left + self.hitboxOffset[0], self.rect.top + self.hitboxOffset[1], self.hitboxSize[0], self.hitboxSize[1])
         self.punchbox = pygame.Rect(self.rect.left + self.punchboxOffsets[0][0], self.rect.top + self.punchboxOffsets[0][1], self.punchboxSize[0], self.punchboxSize[1])
 
-    def load_image(file_name, colorkey=False, image_directory='images'):
+        self.shadow = pygame.sprite.Sprite()
+        self.shadow.image = self.load_image(os.path.join("player_frames", "shadow.png"))
+        self.shadow.rect = self.shadow.image.get_rect()
+        self.shadow.rect.left = self.footprint.left - 16
+        self.shadow.rect.top = self.footprint.top - 5
+
+    def load_image(self, file_name, colorkey=False, image_directory='images'):
         'Loads an image, file_name, from image_directory, for use in pygame'
         file = os.path.join(image_directory, file_name)
         _image = pygame.image.load(file)
@@ -111,6 +118,9 @@ class myPlayer(pygame.sprite.Sprite):
             self.punchbox.left = self.rect.left + self.punchboxOffsets[1][0]
             self.punchbox.top = self.rect.top + self.punchboxOffsets[1][1]
 
+        self.shadow.rect.left = self.footprint.left - 16
+        self.shadow.rect.top = self.footprint.top - 5
+        
     def setLocation(self, pos):
         x,y = pos
         self.pos = [x,y]
@@ -165,7 +175,7 @@ class myPlayer(pygame.sprite.Sprite):
         tempJumpHeight = self.jumpHeight
         tempFootprint = self.footprint
         
-        self.jumpHeight = max(self.jumpHeight + self.jumpVel, 0)
+        self.jumpHeight = math.floor(max(self.jumpHeight + self.jumpVel, 0))
         self.jumpDelta = self.jumpHeight - tempJumpHeight
         
         self.pos[0] = self.pos[0] + self.velDamp[0] * self.vel[0]
@@ -220,48 +230,48 @@ class myPlayer(pygame.sprite.Sprite):
                     if distTop < distBottom:
                         if distLeft == distTop:
                             self.offset(distLeft*-1, distTop*-1)
-                            self.vel[0] = min(self.vel[0], 0)
-                            self.vel[1] = min(self.vel[1], 0)
+                            self.vel[0] = min(abs(self.vel[0])*-1*block.bounceFactor, self.vel[0], 0)
+                            self.vel[1] = min(abs(self.vel[1])*-1*block.bounceFactor, self.vel[1], 0)
                         elif distLeft < distTop:
                             self.offset(distLeft*-1, 0)
-                            self.vel[0] = min(self.vel[0], 0)
+                            self.vel[0] = min(abs(self.vel[0])*-1*block.bounceFactor, self.vel[0], 0)
                         else:
                             self.offset(0, distTop*-1)
-                            self.vel[1] = min(self.vel[1], 0)
+                            self.vel[1] = min(abs(self.vel[1])*-1*block.bounceFactor, self.vel[1], 0)
                     else:
                         if distLeft == distBottom:
                             self.offset(distLeft*-1, distBottom)
-                            self.vel[0] = min(self.vel[0], 0)
-                            self.vel[1] = max(self.vel[1], 0)
+                            self.vel[0] = min(abs(self.vel[0])*-1*block.bounceFactor, self.vel[0], 0)
+                            self.vel[1] = max(abs(self.vel[1])*block.bounceFactor, self.vel[1], 0)
                         elif distLeft < distBottom:
                             self.offset(distLeft*-1, 0)
-                            self.vel[0] = min(self.vel[0], 0)
+                            self.vel[0] = min(abs(self.vel[0])*-1*block.bounceFactor, self.vel[0], 0)
                         else:
                             self.offset(0, distBottom)
-                            self.vel[1] = max(self.vel[1], 0)
+                            self.vel[1] = max(abs(self.vel[1])*block.bounceFactor, self.vel[1], 0)
                 else:
                     if distTop < distBottom:
                         if distRight == distTop:
                             self.offset(distRight, distTop*-1)
-                            self.vel[0] = max(self.vel[0], 0)
-                            self.vel[1] = min(self.vel[1], 0)
+                            self.vel[0] = max(abs(self.vel[0])*block.bounceFactor, self.vel[0], 0)
+                            self.vel[1] = min(abs(self.vel[1])*-1*block.bounceFactor, self.vel[1], 0)
                         elif distRight < distTop:
                             self.offset(distRight, 0)
-                            self.vel[0] = max(self.vel[0], 0)
+                            self.vel[0] = max(abs(self.vel[0])*block.bounceFactor, self.vel[0], 0)
                         else:
                             self.offset(0, distTop*-1)
-                            self.vel[1] = min(self.vel[1], 0)
+                            self.vel[1] = min(abs(self.vel[1])*-1*block.bounceFactor, self.vel[1], 0)
                     else:
                         if distRight == distBottom:
                             self.offset(distRight, distBottom)
-                            self.vel[0] = max(self.vel[0], 0)
-                            self.vel[1] = min(self.vel[1], 0)
+                            self.vel[0] = max(abs(self.vel[0])*block.bounceFactor, self.vel[0], 0)
+                            self.vel[1] = max(abs(self.vel[1])*block.bounceFactor, self.vel[1], 0)
                         elif distRight < distBottom:
                             self.offset(distRight, 0)
-                            self.vel[0] = max(self.vel[0], 0)
+                            self.vel[0] = max(abs(self.vel[0])*block.bounceFactor, self.vel[0], 0)
                         else:
                             self.offset(0, distBottom)
-                            self.vel[1] = min(self.vel[1], 0)
+                            self.vel[1] = max(abs(self.vel[1])*block.bounceFactor, self.vel[1], 0)
                         
 
         if self.attacking == True or self.canAttack == False:

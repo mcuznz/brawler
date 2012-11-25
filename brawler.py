@@ -49,8 +49,8 @@ class overlay(pygame.sprite.Sprite):
 class BrawlerGame():
     width = 1024
     height = 576
-    debug = True
-    #debug = False
+    #debug = True
+    debug = False
 
     def __init__(self):
         # some initialization, creates the window, loads the background
@@ -77,6 +77,7 @@ class BrawlerGame():
             pygame.draw.rect(self.screen, pygame.color.Color("white"), self.playerSprite.footprint, 1)
             if self.playerSprite.attacking:
                 pygame.draw.rect(self.screen, pygame.color.Color("red"), self.playerSprite.punchbox, 1)
+            pygame.draw.rect(self.screen, pygame.color.Color("red"), self.playerSprite.shadow.rect, 1)
             
             for mappart in self.level.mapObjects:
                 pygame.draw.rect(self.screen, pygame.color.Color("yellow"), mappart.rect, 2)
@@ -163,8 +164,9 @@ class BrawlerGame():
         self.enemyProjectiles = pygame.sprite.Group()
         self.playerSprite = myPlayer((200,450))
         self.actorsprites.add(self.playerSprite)
+        
+        self.sprites.add(self.playerSprite.shadow)
         self.sprites.add(self.playerSprite)
-
         self.levelInit()
 
 
