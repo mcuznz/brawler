@@ -46,7 +46,7 @@ class level():
 		self.playerStart = (125,375)
 
 		self.enemies = pygame.sprite.Group()
-		self.enemies.add(enemy.enemyHopper((600,375), 0.6))
+		self.enemies.add(enemy.enemyHopper((450,445), 1.0))
 
 
 	def load_image(self, file_name, colorkey=False, image_directory='images'):

@@ -50,8 +50,8 @@ class overlay(pygame.sprite.Sprite):
 class BrawlerGame():
     width = 1024
     height = 576
-    debug = True
-    #debug = False
+    #debug = True
+    debug = False
 
     def __init__(self):
         # some initialization, creates the window, loads the background
@@ -78,7 +78,25 @@ class BrawlerGame():
             for actor in self.actorsprites:
                 if actor.footprint.bottom == yValues[i]:
                     self.sprites.change_layer(actor, i)
+
+        self.checkEnemiesHit()    
+    
+    def checkEnemiesHit(self):
+        # don't bother if the player isn't attacking
+        somethingHit = False
+        if self.playerSprite.attacking:
+            # loop through baddies and see if any are hit
+            for baddie in self.enemies:
+                # is there a collision on the punchbox and hitbox?  are the player and enemy footprints in line?
+                if self.playerSprite.punchbox.colliderect(baddie.hitbox) and \
+                    self.playerSprite.footprintCheck.colliderect(baddie.footprintCheck):
+                    somethingHit = True
+                    baddie.takeHit(self.playerSprite.damage)
         
+        if somethingHit:
+            self.playerSprite.attacking = False
+            self.playerSprite.canAttack = False
+  
 
     def draw(self):
         #print 'Draw'

@@ -25,6 +25,9 @@ class enemyHopper(pygame.sprite.Sprite):
 	jumpDelta = 0.0
 
 	accel = [10, 6]
+	
+	health = 100.0
+	maxHealth = 100.0
 
 	def setScale(self, newscale):
 		print 'scaling to',newscale
@@ -61,6 +64,8 @@ class enemyHopper(pygame.sprite.Sprite):
 		self.shadow.image = pygame.transform.smoothscale(self.shadow.sourceImage, (int(self.shadowSize[0]), int(self.shadowSize[1])))
 		self.shadow.rect = pygame.Rect(self.footprint.left + self.shadowOffset[0], self.footprint.top + self.shadowOffset[1], self.shadowSize[0], self.shadowSize[1])
 
+		self.footprintCheck.left = self.footprint.left - 1024
+		self.footprintCheck.top = self.footprint.top
 		
 		# should probably modify jump height and accel as well
 
@@ -91,7 +96,9 @@ class enemyHopper(pygame.sprite.Sprite):
 		
 		self.footprint = pygame.Rect(self.rect.left + self.footprintOffset[0], self.rect.top + self.footprintOffset[1], self.footprintSize[0], self.footprintSize[1])
 		self.hitbox = pygame.Rect(self.rect.left + self.hitboxOffset[0], self.rect.top + self.hitboxOffset[1], self.hitboxSize[0], self.hitboxSize[1])
-		
+
+		self.footprintCheck = pygame.Rect(self.footprint.left - 1024, self.rect.top + self.footprintOffset[1], 2048 + self.footprint.width, self.footprintSize[1])
+
 		self.shadow = pygame.sprite.Sprite()
 		self.shadow.sourceImage = self.load_image(os.path.join("player_frames", "shadow-large.png"))
 		self.shadow.image = self.shadow.sourceImage
@@ -101,6 +108,15 @@ class enemyHopper(pygame.sprite.Sprite):
 		self.shadow.rect.top = self.footprint.top + self.shadowOffset[1]
 		
 		self.setScale(scale)
+
+	def takeHit(self, damage):
+		self.health = self.health - damage
+		if self.health <= 0:
+			print "It's dead!"
+			self.shadow.kill()
+			self.kill()
+		else:
+			self.setScale(self.health / self.maxHealth)
 
 	def update(self, mapData):
 		pass

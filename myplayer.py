@@ -43,6 +43,8 @@ class myPlayer(pygame.sprite.Sprite):
     jumpDelta = 0.0
 
     minWalkVel = 2
+    
+    damage = 15
 
     def __init__(self, acc):
         pygame.sprite.Sprite.__init__(self)
@@ -54,10 +56,14 @@ class myPlayer(pygame.sprite.Sprite):
         self.frameHold = 4
 
         self.strips = [
-            SpriteStripAnim(os.path.join("images", "player_frames", "hobo-still.png"), (0,0,128,128), 1, None, True, self.frameHold, False),
-            SpriteStripAnim(os.path.join("images", "player_frames", "hobo-still.png"), (0,0,128,128), 1, None, True, self.frameHold, True),
-            SpriteStripAnim(os.path.join("images", "player_frames", "hobo-run-sprite03.png"), (0,0,128,128), 3, None, True, self.frameHold, False),
-            SpriteStripAnim(os.path.join("images", "player_frames", "hobo-run-sprite03.png"), (0,0,128,128), 3, None, True, self.frameHold, True)
+            SpriteStripAnim(os.path.join("images", "player_frames", "hobo-still.png"), (0,0,128,128),
+                            1, None, True, self.frameHold, False),
+            SpriteStripAnim(os.path.join("images", "player_frames", "hobo-still.png"), (0,0,128,128),
+                            1, None, True, self.frameHold, True),
+            SpriteStripAnim(os.path.join("images", "player_frames", "hobo-run-sprite03.png"), (0,0,128,128),
+                            3, None, True, self.frameHold, False),
+            SpriteStripAnim(os.path.join("images", "player_frames", "hobo-run-sprite03.png"), (0,0,128,128),
+                            3, None, True, self.frameHold, True)
         ]
         self.whichStrip = 0
         self.strips[self.whichStrip].iter()
@@ -68,9 +74,14 @@ class myPlayer(pygame.sprite.Sprite):
 
         #Rects - left top width height
         #self.exterior = pygame.Rect(0, 0, 128, 128)
-        self.footprint = pygame.Rect(self.rect.left + self.footprintOffset[0], self.rect.top + self.footprintOffset[1], self.footprintSize[0], self.footprintSize[1])
-        self.hitbox = pygame.Rect(self.rect.left + self.hitboxOffset[0], self.rect.top + self.hitboxOffset[1], self.hitboxSize[0], self.hitboxSize[1])
-        self.punchbox = pygame.Rect(self.rect.left + self.punchboxOffsets[0][0], self.rect.top + self.punchboxOffsets[0][1], self.punchboxSize[0], self.punchboxSize[1])
+        self.footprint = pygame.Rect(self.rect.left + self.footprintOffset[0], self.rect.top + self.footprintOffset[1],
+                                     self.footprintSize[0], self.footprintSize[1])
+        self.hitbox = pygame.Rect(self.rect.left + self.hitboxOffset[0], self.rect.top + self.hitboxOffset[1],
+                                  self.hitboxSize[0], self.hitboxSize[1])
+        self.punchbox = pygame.Rect(self.rect.left + self.punchboxOffsets[0][0], self.rect.top + self.punchboxOffsets[0][1],
+                                    self.punchboxSize[0], self.punchboxSize[1])
+        self.footprintCheck = pygame.Rect(self.footprint.left - 1024, self.rect.top + self.footprintOffset[1],
+                                          2048 + self.footprint.width, self.footprintSize[1])
 
         self.shadow = pygame.sprite.Sprite()
         #self.shadow.image = self.load_image(os.path.join("player_frames", "shadow.png"))
@@ -120,6 +131,9 @@ class myPlayer(pygame.sprite.Sprite):
 
         self.shadow.rect.left = self.footprint.left - 16
         self.shadow.rect.top = self.footprint.top - 5
+        
+        self.footprintCheck.left = self.footprint.left - 1024
+        self.footprintCheck.top = self.footprint.top
         
     def setLocation(self, pos):
         x,y = pos
