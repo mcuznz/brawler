@@ -50,8 +50,6 @@ class myPlayer(pygame.sprite.Sprite):
         self.pos = [x,y]
         self.vel = [0.0,0.0]
         self.acc = [0.0, 0.0]
-        self.theta = 0.0
-        self.dtheta = 0.0
 
         self.frameHold = 4
 
@@ -75,7 +73,9 @@ class myPlayer(pygame.sprite.Sprite):
         self.punchbox = pygame.Rect(self.rect.left + self.punchboxOffsets[0][0], self.rect.top + self.punchboxOffsets[0][1], self.punchboxSize[0], self.punchboxSize[1])
 
         self.shadow = pygame.sprite.Sprite()
-        self.shadow.image = self.load_image(os.path.join("player_frames", "shadow.png"))
+        #self.shadow.image = self.load_image(os.path.join("player_frames", "shadow.png"))
+        self.shadow.image = self.load_image(os.path.join("player_frames", "shadow-large.png"))
+        self.shadow.image = pygame.transform.smoothscale(self.shadow.image, (64, 32))
         self.shadow.rect = self.shadow.image.get_rect()
         self.shadow.rect.left = self.footprint.left - 16
         self.shadow.rect.top = self.footprint.top - 5

@@ -6,6 +6,7 @@ import mapobject
 from pygame.locals import *
 import level
 from sprites import SpriteStripAnim
+import enemy
 
 if not pygame.font: print 'Warning, fonts disabled'
 if not pygame.mixer: print 'Warning, sound disabled'
@@ -49,8 +50,8 @@ class overlay(pygame.sprite.Sprite):
 class BrawlerGame():
     width = 1024
     height = 576
-    #debug = True
-    debug = False
+    debug = True
+    #debug = False
 
     def __init__(self):
         # some initialization, creates the window, loads the background
@@ -64,6 +65,20 @@ class BrawlerGame():
 
     def update(self):
         self.actorsprites.update(self.level.mapObjects)
+        
+        layers = len(self.actorsprites)
+        yValues = []
+        
+        for actor in self.actorsprites:
+            yValues.append(actor.footprint.bottom)
+        
+        yValues = sorted(yValues)
+        
+        for i in range(len(yValues)):
+            for actor in self.actorsprites:
+                if actor.footprint.bottom == yValues[i]:
+                    self.sprites.change_layer(actor, i)
+        
 
     def draw(self):
         #print 'Draw'
@@ -75,12 +90,18 @@ class BrawlerGame():
             pygame.draw.rect(self.screen, pygame.color.Color("green"), self.playerSprite.rect, 1)
             pygame.draw.rect(self.screen, pygame.color.Color("blue"), self.playerSprite.hitbox, 1)
             pygame.draw.rect(self.screen, pygame.color.Color("white"), self.playerSprite.footprint, 1)
+            pygame.draw.rect(self.screen, pygame.color.Color("red"), self.playerSprite.shadow.rect, 1)
             if self.playerSprite.attacking:
                 pygame.draw.rect(self.screen, pygame.color.Color("red"), self.playerSprite.punchbox, 1)
-            pygame.draw.rect(self.screen, pygame.color.Color("red"), self.playerSprite.shadow.rect, 1)
             
             for mappart in self.level.mapObjects:
                 pygame.draw.rect(self.screen, pygame.color.Color("yellow"), mappart.rect, 2)
+                
+            for baddie in self.enemies:
+                pygame.draw.rect(self.screen, pygame.color.Color("green"), baddie.rect, 1)
+                pygame.draw.rect(self.screen, pygame.color.Color("blue"), baddie.hitbox, 1)
+                pygame.draw.rect(self.screen, pygame.color.Color("white"), baddie.footprint, 1)
+                pygame.draw.rect(self.screen, pygame.color.Color("red"), baddie.shadow.rect, 1)
         
         pygame.display.update(things)
         pygame.display.flip()
@@ -96,10 +117,16 @@ class BrawlerGame():
         self.playerSprite.speedMultiplier = 1.0
         self.playerSprite.gravMultiplier = 1.0
 
+        for baddie in self.level.enemies:
+            self.enemies.add(baddie)
+            self.actorsprites.add(baddie)
+
         for actor in self.actorsprites:
             actor.velDamp = self.level.velDamp
             actor.accDamp = self.level.accDamp
             actor.grav = self.level.grav
+
+
 
     def mainLoop(self):
         while True:
@@ -139,6 +166,7 @@ class BrawlerGame():
     def pause(self):
         print 'Paused';
         self.sprites.add(self.overlay)
+        self.sprites.move_to_front(self.overlay)
         while True:
         # game paused
             self.draw()
@@ -158,16 +186,26 @@ class BrawlerGame():
                         return True
 
     def reload(self):
-        self.sprites = pygame.sprite.OrderedUpdates()
+        self.sprites = pygame.sprite.LayeredUpdates()
+        
         self.actorsprites = pygame.sprite.Group()
         self.enemies = pygame.sprite.Group()
         self.enemyProjectiles = pygame.sprite.Group()
+        
         self.playerSprite = myPlayer((200,450))
         self.actorsprites.add(self.playerSprite)
         
         self.sprites.add(self.playerSprite.shadow)
         self.sprites.add(self.playerSprite)
+        
         self.levelInit()
+        
+        for baddie in self.enemies:
+            self.sprites.add(baddie.shadow)
+            self.sprites.add(baddie)
+            self.sprites.change_layer(baddie.shadow, -1)
+
+        self.sprites.change_layer(self.playerSprite.shadow, -1)
 
 
 if __name__ == '__main__':

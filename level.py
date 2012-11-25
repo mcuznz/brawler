@@ -2,6 +2,7 @@ import pygame
 from pygame.locals import *
 import sys, os
 import mapobject as m
+import enemy
 
 class level():
 	
@@ -43,6 +44,10 @@ class level():
 		self.mapObjects.add(m.mapobject((self.width - 250, self.height - 230, 260, 160), True, 0.8))
 
 		self.playerStart = (125,375)
+
+		self.enemies = pygame.sprite.Group()
+		self.enemies.add(enemy.enemyHopper((600,375), 0.6))
+
 
 	def load_image(self, file_name, colorkey=False, image_directory='images'):
 		'Loads an image, file_name, from image_directory, for use in pygame'
