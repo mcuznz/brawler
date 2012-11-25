@@ -18,7 +18,6 @@ class enemyHopper(pygame.sprite.Sprite):
 	shadowOffset = [math.floor(-12*scaler), math.floor(-16*scaler)]
 	shadowSize = [math.floor(192*scaler), math.floor(96*scaler)]
 
-	
 	jumpVelStart = 16
 	jumpVel = 0.0
 	jumpHeight = 0.0
@@ -28,6 +27,9 @@ class enemyHopper(pygame.sprite.Sprite):
 	
 	health = 100.0
 	maxHealth = 100.0
+	
+	damageOnCollide = True
+	damage = 15
 
 	def setScale(self, newscale):
 		print 'scaling to',newscale
@@ -66,6 +68,7 @@ class enemyHopper(pygame.sprite.Sprite):
 
 		self.footprintCheck.left = self.footprint.left - 1024
 		self.footprintCheck.top = self.footprint.top
+		self.footprintCheck.height = self.footprint.height
 		
 		# should probably modify jump height and accel as well
 

@@ -45,6 +45,13 @@ class myPlayer(pygame.sprite.Sprite):
     minWalkVel = 2
     
     damage = 15
+    health = 100.0
+    maxHealth = 100.0
+    
+    isInvuln = False
+    invulnCounter = 0
+    invulnCooldown = 64
+    invulnFromDamage = False
 
     def __init__(self, acc):
         pygame.sprite.Sprite.__init__(self)
@@ -63,10 +70,21 @@ class myPlayer(pygame.sprite.Sprite):
             SpriteStripAnim(os.path.join("images", "player_frames", "hobo-run-sprite03.png"), (0,0,128,128),
                             3, None, True, self.frameHold, False),
             SpriteStripAnim(os.path.join("images", "player_frames", "hobo-run-sprite03.png"), (0,0,128,128),
+                            3, None, True, self.frameHold, True),
+            
+            # InvulnFromDamage
+            SpriteStripAnim(os.path.join("images", "player_frames", "hobo-still-invuln.png"), (0,0,128,128),
+                            1, None, True, self.frameHold, False),
+            SpriteStripAnim(os.path.join("images", "player_frames", "hobo-still-invuln.png"), (0,0,128,128),
+                            1, None, True, self.frameHold, True),
+            SpriteStripAnim(os.path.join("images", "player_frames", "hobo-run-sprite03-invuln.png"), (0,0,128,128),
+                            3, None, True, self.frameHold, False),
+            SpriteStripAnim(os.path.join("images", "player_frames", "hobo-run-sprite03-invuln.png"), (0,0,128,128),
                             3, None, True, self.frameHold, True)
         ]
         self.whichStrip = 0
         self.strips[self.whichStrip].iter()
+        self.strips[self.whichStrip+4].iter()
         self.image = self.strips[self.whichStrip].next()
         
         self.rect = self.image.get_rect()
@@ -104,6 +122,14 @@ class myPlayer(pygame.sprite.Sprite):
         else: # If there is no colorkey, preserve the image's alpha per pixel.
             _image = _image.convert_alpha()
         return _image
+
+    def takeHit(self, damage):
+        if self.isInvuln == False:
+            self.invulnCounter = 0
+            self.isInvuln = True
+            self.invulnFromDamage = True
+            self.health = self.health - damage
+            print self.health
 
     def jump(self):
         if self.onGround is True:
@@ -304,21 +330,38 @@ class myPlayer(pygame.sprite.Sprite):
                 if self.whichStrip != 3:
                     self.whichStrip = 3
                     self.strips[self.whichStrip].iter()
+                    self.strips[self.whichStrip+4].iter()
             else:
                 if self.whichStrip != 2:
                     self.whichStrip = 2
                     self.strips[self.whichStrip].iter()
+                    self.strips[self.whichStrip+4].iter()
         else:
             if not self.facingRight:
                 if self.whichStrip != 1:
                     self.whichStrip = 1
                     self.strips[self.whichStrip].iter()
+                    self.strips[self.whichStrip+4].iter()
             else:
                 if self.whichStrip != 0:
                     self.whichStrip = 0
                     self.strips[self.whichStrip].iter()
+                    self.strips[self.whichStrip+4].iter()
         
         self.image = self.strips[self.whichStrip].next()
+
+        if self.isInvuln:
+            #if self.invulvFromDamage:
+            stripOffset = 4
+            
+            if math.floor(self.invulnCounter/4) % 2 == 0:
+                self.image = self.strips[self.whichStrip+stripOffset].next()
+            self.invulnCounter += 1
+            if self.invulnCounter > self.invulnCooldown:
+                self.invulnCounter = 0
+                self.isInvuln = False
+                self.invulnFromDamage = False
+
 
         if self.left and self.right:
             self.leftAndRightPress()

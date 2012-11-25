@@ -50,8 +50,8 @@ class overlay(pygame.sprite.Sprite):
 class BrawlerGame():
     width = 1024
     height = 576
-    #debug = True
-    debug = False
+    debug = True
+    #debug = False
 
     def __init__(self):
         # some initialization, creates the window, loads the background
@@ -79,7 +79,18 @@ class BrawlerGame():
                 if actor.footprint.bottom == yValues[i]:
                     self.sprites.change_layer(actor, i)
 
-        self.checkEnemiesHit()    
+        self.checkEnemiesHit()
+        self.checkPlayerHitSimple()
+    
+    def checkPlayerHitSimple(self):
+        somethingHit = False
+        for baddie in self.enemies:
+            if baddie.damageOnCollide and self.playerSprite.hitbox.colliderect(baddie.hitbox) and \
+                self.playerSprite.footprintCheck.colliderect(baddie.footprintCheck):
+                somethingHit = True
+                self.playerSprite.takeHit(baddie.damage)
+                # Break so that we only take damage from one source - we're going to be temporarily invuln anyway!
+                break
     
     def checkEnemiesHit(self):
         # don't bother if the player isn't attacking
@@ -179,7 +190,7 @@ class BrawlerGame():
 
             self.update()
             self.draw()
-            self.timer.tick(60)
+            self.timer.tick(50)
 
     def pause(self):
         print 'Paused';
