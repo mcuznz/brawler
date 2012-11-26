@@ -41,6 +41,8 @@ class myPlayer(pygame.sprite.Sprite):
     jumpVel = 0.0
     jumpHeight = 0.0
     jumpDelta = 0.0
+    doubleJump = False
+    canDoubleJump = True
 
     minWalkVel = 2
     
@@ -132,9 +134,16 @@ class myPlayer(pygame.sprite.Sprite):
             print self.health
 
     def jump(self):
-        if self.onGround is True:
-            self.jumpVel = self.jumpVelStart
-            self.onGround = False
+        if self.canDoubleJump:
+            if self.onGround is True or self.doubleJump is False:
+                if self.onGround is False and self.doubleJump is False:
+                    self.doubleJump = True
+                self.jumpVel = self.jumpVelStart
+                self.onGround = False
+        else:
+            if self.onGround is True:
+                self.jumpVel = self.jumpVelStart
+                self.onGround = False
 
     def attack(self):
         if self.canAttack == True:
@@ -233,6 +242,7 @@ class myPlayer(pygame.sprite.Sprite):
         if self.jumpHeight == 0:
             self.jumpVel = 0
             self.onGround = True
+            self.doubleJump = False
         else:
             self.jumpVel = self.jumpVel - (self.grav * self.gravMultiplier)
         
