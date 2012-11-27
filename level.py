@@ -29,7 +29,7 @@ class level():
 		self.height = height
 		
 		# this should all be loaded from an XML file.  This is a cludge
-		self.background = self.load_image('brawler-arena-mockup.jpg')
+		self.background = self.load_image('brawler-alley-mockup.jpg')
 		self.background = pygame.transform.scale(self.background, (self.width, self.height))
 
 		# Back Wall
